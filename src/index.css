@@ -1,1 +1,112 @@
 @import "tailwindcss";
+
+/* --- LAYOUT UTAMA --- */
+body, html {
+  margin: 0; padding: 0; height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #1e293b; /* Warna latar gelap */
+  color: #f8fafc;
+  overflow: hidden;
+}
+
+#root, #app {
+  display: flex; flex-direction: column; height: 100vh;
+}
+
+/* --- TOP BAR --- */
+#topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 20px; background-color: #0f172a;
+  border-bottom: 2px solid #334155;
+}
+.brand-text { font-size: 1.2rem; font-weight: bold; margin-left: 8px; }
+.level-info { font-weight: bold; color: #38bdf8; }
+
+/* --- AREA UTAMA (GAME + KONTROL) --- */
+#main {
+  display: flex; flex: 1; overflow: hidden;
+}
+
+/* --- PANEL GAME (KIRI) --- */
+#game-pane {
+  flex: 1; position: relative;
+  display: flex; justify-content: center; align-items: center;
+  background-color: #000;
+}
+#game-container {
+  border: 4px solid #334155; border-radius: 8px; overflow: hidden;
+}
+#run-status-banner {
+  position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 20px;
+  opacity: 0; transition: opacity 0.3s; pointer-events: none;
+}
+#run-status-banner.show { opacity: 1; }
+
+/* --- PANEL KONTROL (KANAN) --- */
+#control-panel {
+  width: 350px; background-color: #1e293b; border-left: 2px solid #334155;
+  display: flex; flex-direction: column; padding: 15px; gap: 15px;
+  overflow-y: auto;
+}
+.panel-card {
+  background-color: #334155; padding: 15px; border-radius: 10px;
+}
+.panel-title { font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px;}
+
+/* --- TOMBOL PALET & BLOK --- */
+#palette { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.cmd-btn {
+  padding: 10px 5px; border: none; border-radius: 5px; font-weight: bold;
+  cursor: pointer; color: white; transition: transform 0.1s;
+}
+.cmd-btn:active { transform: scale(0.95); }
+.cmd-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.forward { background-color: #3b82f6; } /* Biru */
+.left { background-color: #10b981; }    /* Hijau */
+.right { background-color: #f59e0b; }   /* Kuning */
+.repeat { background-color: #8b5cf6; }  /* Ungu */
+
+#program-list {
+  min-height: 200px; background-color: #1e293b; border-radius: 5px;
+  padding: 10px; display: flex; flex-direction: column; gap: 5px;
+}
+.empty-hint { text-align: center; color: #94a3b8; font-style: italic; margin-top: 20px; }
+
+/* Tampilan Blok dalam List */
+.block { padding: 8px 12px; border-radius: 5px; font-weight: bold; color: white; transition: 0.2s;}
+.block-forward { background-color: #3b82f6; }
+.block-left { background-color: #10b981; }
+.block-right { background-color: #f59e0b; }
+.block-repeat { background-color: transparent; border: 2px solid #8b5cf6; padding: 5px; }
+.repeat-header { background-color: #8b5cf6; padding: 5px 8px; border-radius: 3px; display: flex; justify-content: space-between; }
+.repeat-children { padding: 5px 5px 5px 15px; display: flex; flex-direction: column; gap: 5px; border-left: 2px dashed #8b5cf6; margin-top: 5px;}
+.exec-active { transform: scale(1.05); box-shadow: 0 0 10px white; border-color: white;}
+
+/* --- TOMBOL AKSI BAWAH --- */
+#action-row { display: flex; gap: 5px; margin-top: 15px; }
+.action-btn { flex: 1; padding: 12px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; color: white;}
+#btn-undo { background-color: #64748b; }
+#btn-clear { background-color: #ef4444; }
+#btn-run { background-color: #22c55e; flex: 2; font-size: 1.1rem; }
+#btn-run:disabled { background-color: #14532d; color: #94a3b8; }
+
+/* --- MODAL (POPUP MENANG/KALAH) --- */
+#modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 50;
+}
+#modal-overlay.show { display: flex; }
+.modal-card {
+  background: #1e293b; padding: 30px; border-radius: 15px; text-align: center;
+  max-width: 400px; border: 2px solid #334155;
+}
+#modal-emoji { font-size: 4rem; display: block; margin-bottom: 10px; }
+.stars-row { font-size: 2rem; margin: 15px 0; letter-spacing: 5px; }
+.star { filter: grayscale(100%); opacity: 0.3; }
+.star.earned { filter: grayscale(0%); opacity: 1; color: gold;}
+.modal-btn-row { display: flex; gap: 10px; justify-content: center; margin-top: 20px;}
+.modal-btn { padding: 10px 20px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer; color: white; }
+.modal-btn.primary { background-color: #3b82f6; }
+.modal-btn.tertiary { background-color: #64748b; }
