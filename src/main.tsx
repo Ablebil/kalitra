@@ -1,10 +1,10 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.tsx";
+// src/main.ts
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+// 1. Ekstraksi CSS (Tahap 1 Selesai)
+import './styles/main.css';
+import './styles/layout.css';
+import './styles/buttons.css';
+import './styles/modal.css';
+
+// TODO: Inisialisasi Game (Akan dikerjakan pada tahap refactor UI dan Game Engine berikutnya)
+console.log("KALITRA - Styles loaded. Waiting for next refactor phase...");

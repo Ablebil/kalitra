@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { BlockItem, ModalData } from '../types/game';
+import React, { createContext, useContext, useState } from 'react';
+import type { ReactNode } from 'react';
+import type { BlockItem, ModalData } from '../types/game';
 
 interface GameState {
   currentLevel: number;

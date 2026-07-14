@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../store/GameContext';
-import { BlockItem, CommandType } from '../types/game';
+import type { BlockItem, CommandType } from '../types/game';
 
 export default function ControlPanel({ onRun }: { onRun: () => void }) {
   const { program, setProgram, isRunning, activeBlockId } = useGame();
