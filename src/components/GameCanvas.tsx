@@ -19,10 +19,17 @@ export function GameCanvas({ onSceneReady }: GameCanvasProps) {
       width: GAME_W,
       height: GAME_H,
       parent: container,
-      render: { transparent: true },
+      render: {
+        transparent: true,
+        antialias: true,
+        roundPixels: true, 
+      },
+      // Delegasi manajemen resolusi ke ScaleManager
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
+        resolution: window.devicePixelRatio || 1, // Menyelaraskan dengan physical pixel ratio
+        autoDensity: true, // Menginstruksikan CSS canvas untuk beradaptasi dengan resolusi internal
       },
       scene: [MainScene],
     });
@@ -32,7 +39,7 @@ export function GameCanvas({ onSceneReady }: GameCanvasProps) {
     return () => {
       game.destroy(true);
     };
-  }, []);
+  }, [onSceneReady]);
 
   return <div ref={containerRef} className="flex items-center justify-center w-full h-full" />;
 }

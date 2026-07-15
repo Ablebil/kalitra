@@ -68,4 +68,13 @@ export class MainScene extends Phaser.Scene {
     this.levelOrigin = levelOrigin(level);
     buildLevel(this, level);
   }
+
+  update(): void {
+    if (this.charSprite && this.charSprite.active) {
+       // Melakukan normalisasi Real-time Y-Sorting.
+       // Mengikat kedalaman render ke nilai koordinat absolut Y, mencegah clipping 
+       // dengan rintangan saat posisi karakter berubah selama transisi gerakan/tween.
+       this.charSprite.setDepth(this.charSprite.y + 10); 
+    }
+  }
 }
