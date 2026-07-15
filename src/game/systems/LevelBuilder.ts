@@ -1,12 +1,19 @@
-import { TILE, GAME_W, GAME_H, px, py, CHAR_ROW, DEBUG } from "../utils/constants.ts";
+import { TILE, GAME_W, GAME_H, px, py } from "../utils/constants.ts";
 import { pickGrassKey, pickObstacleKey } from "../utils/helpers.ts";
 import { decorateLevel } from "../utils/decorations.ts";
 import type { ObstacleType } from "../types/index.ts";
 
-// Character Y offset from tile centre, derived from:
-//   minOffset = originY(0.86) * renderedH(TILE*1.02) - TILE/2 = TILE*0.3772
-//   TILE * 0.38 gives topEdge margin = +0.28px (sprite head just inside tile bounds)
-const CHAR_Y_OFFSET = TILE * 0.38;
+// Max frame dimensions from character atlas (back_0 is the largest at 175×262)
+const CHAR_FRAME_W = 175;
+const CHAR_FRAME_H = 262;
+
+// Maps direction → atlas idle frame name
+const FRAME_IDLE: Record<string, string> = {
+  down: "idle_0",
+  up: "back_0",
+  left: "walk_left_0",
+  right: "walk_right_0",
+};
 
 function obstacleFit(sprite: Phaser.GameObjects.Image, type: ObstacleType): void {
   const targets: Record<string, number> = { bush: 0.82, tree: 0.92, rock: 0.72, fence: 0.86 };
@@ -116,17 +123,15 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
     scene.collectibleSprites[cItem.col + "," + cItem.row] = spr;
   });
 
-  const FRAME_W = 256;
-  const FRAME_H = 384;
   const cs = scene.add.sprite(
     px(origin.x, level.start.col),
-    py(origin.y, level.start.row) + CHAR_Y_OFFSET,
+    py(origin.y, level.start.row) + TILE / 2,
     "character",
-    CHAR_ROW[level.start.dir] * 4,
+    FRAME_IDLE[level.start.dir],
   );
-  const cScale = Math.min((TILE * 0.72) / FRAME_W, (TILE * 1.02) / FRAME_H);
+  const cScale = Math.min((TILE * 0.72) / CHAR_FRAME_W, (TILE * 1.02) / CHAR_FRAME_H) * 0.88;
   cs.setScale(cScale);
-  cs.setOrigin(0.5, 0.86);
+  cs.setOrigin(0.5, 1.0);
   cs.setDepth(py(origin.y, level.start.row) + 1);
   scene.worldLayer.add(cs);
   scene.charSprite = cs;
@@ -134,44 +139,6 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
 
   // Idle bob tween — gentle scale-Y oscillation while not walking
   startIdleBob(scene, cScale);
-
-  if (DEBUG) {
-    // Tile grid overlay
-    const gfx = scene.add.graphics();
-    gfx.lineStyle(1, 0xff0000, 0.4);
-    for (let r = 0; r <= level.rows; r++) {
-      gfx.moveTo(px(origin.x, 0) - TILE / 2, py(origin.y, r) - TILE / 2);
-      gfx.lineTo(px(origin.x, level.cols - 1) + TILE / 2, py(origin.y, r) - TILE / 2);
-    }
-    for (let c = 0; c <= level.cols; c++) {
-      gfx.moveTo(px(origin.x, c) - TILE / 2, py(origin.y, 0) - TILE / 2);
-      gfx.lineTo(px(origin.x, c) - TILE / 2, py(origin.y, level.rows - 1) + TILE / 2);
-    }
-    gfx.strokePath();
-    gfx.setDepth(9999);
-    scene.worldLayer.add(gfx);
-
-    // Coordinate labels per tile
-    const style = { fontSize: "11px", color: "#ff4444", fontFamily: "monospace" };
-    for (let r = 0; r < level.rows; r++) {
-      for (let c = 0; c < level.cols; c++) {
-        const label = scene.add.text(px(origin.x, c), py(origin.y, r), `${c},${r}`, style);
-        label.setOrigin(0.5, 0.5);
-        label.setDepth(9998);
-        scene.worldLayer.add(label);
-      }
-    }
-
-    // Character bounding box
-    const cs = scene.charSprite;
-    const bb = scene.add.graphics();
-    const w = 256 * scene.charScale;
-    const h = 384 * scene.charScale;
-    bb.lineStyle(2, 0x00ff00, 0.8);
-    bb.strokeRect(cs.x - w / 2, cs.y - h * 0.86, w, h);
-    bb.setDepth(9997);
-    scene.worldLayer.add(bb);
-  }
 }
 
 /** Start the idle bob animation on the character sprite. */
@@ -196,5 +163,3 @@ export function stopIdleBob(scene: any, cScale: number): void {
   scene.charSprite.setScale(cScale);
   scene._idleBobActive = false;
 }
-
-export { CHAR_Y_OFFSET };

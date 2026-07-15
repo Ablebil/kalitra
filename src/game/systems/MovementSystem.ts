@@ -1,12 +1,14 @@
 import { sleep, tweenPromise } from "../utils/helpers.ts";
-import { CHAR_ROW, px, py, DIRS, DEBUG } from "../utils/constants.ts";
-import {
-  addFootprint,
-  clearFootprints,
-  startIdleBob,
-  stopIdleBob,
-  CHAR_Y_OFFSET,
-} from "./LevelBuilder.ts";
+import { px, py, DIRS, TILE } from "../utils/constants.ts";
+
+// Maps direction → atlas idle frame name (mirrors LevelBuilder.ts)
+const FRAME_IDLE: Record<string, string> = {
+  down: "idle_0",
+  up: "back_0",
+  left: "walk_left_0",
+  right: "walk_right_0",
+};
+import { addFootprint, clearFootprints, startIdleBob, stopIdleBob } from "./LevelBuilder.ts";
 import { playSound } from "../../lib/audio.ts";
 import type { LevelData, Direction } from "../types/index.ts";
 
@@ -43,38 +45,18 @@ export async function moveForward(
   cs.play("walk-" + charDir);
   playSound(scene.muted, "step");
 
-  let frameCount = 0;
   await tweenPromise(scene, cs, {
     x: px(origin.x, nc),
-    y: py(origin.y, nr) + CHAR_Y_OFFSET,
+    y: py(origin.y, nr) + TILE / 2,
     duration: 380,
     ease: "Linear",
     onUpdate: () => {
       cs.setDepth(cs.y);
-      if (DEBUG) {
-        frameCount++;
-        if (frameCount % 3 === 0) {
-          const currentAnim = cs.anims?.currentAnim?.key ?? "none";
-          const currentFrame = cs.frame?.name ?? cs.frame;
-          console.log(
-            `[MOVE] frame=${frameCount} pos=(${cs.x.toFixed(1)},${cs.y.toFixed(1)})`,
-            `depth=${cs.depth} anim=${currentAnim} frameIdx=${currentFrame}`,
-            `scale=(${cs.scaleX.toFixed(4)},${cs.scaleY.toFixed(4)})`,
-          );
-        }
-      }
     },
   });
 
-  if (DEBUG) {
-    console.log(
-      `[MOVE] DONE from (${charCol},${charRow})→(${nc},${nr}) totalFrames=${frameCount}`,
-      `finalPos=(${cs.x.toFixed(1)},${cs.y.toFixed(1)}) depth=${cs.depth}`,
-    );
-  }
-
   cs.stop();
-  cs.setFrame(CHAR_ROW[charDir] * 4);
+  cs.setFrame(FRAME_IDLE[charDir]);
   addFootprint(scene, charCol, charRow);
   state.charCol = nc;
   state.charRow = nr;
@@ -105,7 +87,7 @@ export async function turnChar(scene: any, state: MovementState, delta: number):
   const idx = (DIRS.indexOf(state.charDir) + delta + 4) % 4;
   state.charDir = DIRS[idx];
   const cs = scene.charSprite;
-  cs.setFrame(CHAR_ROW[state.charDir] * 4);
+  cs.setFrame(FRAME_IDLE[state.charDir]);
   playSound(scene.muted, "turn");
   const baseX = scene.charScale;
   stopIdleBob(scene, baseX);
@@ -176,8 +158,8 @@ export function resetWorldState(scene: any, level: LevelData, state: MovementSta
   const origin = scene.levelOrigin;
   const cs = scene.charSprite;
   cs.stop();
-  cs.setFrame(CHAR_ROW[level.start.dir] * 4);
-  cs.setPosition(px(origin.x, level.start.col), py(origin.y, level.start.row) + CHAR_Y_OFFSET);
+  cs.setFrame(FRAME_IDLE[level.start.dir]);
+  cs.setPosition(px(origin.x, level.start.col), py(origin.y, level.start.row) + TILE / 2);
   cs.setDepth(py(origin.y, level.start.row) + 1);
   cs.clearTint();
   cs.setScale(scene.charScale);

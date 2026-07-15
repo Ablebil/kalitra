@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { TILE, CHAR_ROW } from "../utils/constants.ts";
+import { TILE } from "../utils/constants.ts";
 import { px, py, sleep } from "../utils/helpers.ts";
 import type { LevelData } from "../types/index.ts";
 
@@ -22,19 +22,20 @@ export function createCharacter(
 }
 
 export function createWalkingAnimations(scene: Phaser.Scene): void {
-  const dirs: Array<"up" | "right" | "down" | "left"> = ["up", "right", "down", "left"];
-  dirs.forEach((d) => {
-    const row = CHAR_ROW[d];
+  const anims: Record<string, string[]> = {
+    "walk-down": ["idle_0", "idle_1", "idle_2", "idle_3"],
+    "walk-up": ["back_0", "back_1", "back_2", "back_3"],
+    "walk-left": ["walk_left_0", "walk_left_1", "walk_left_2", "walk_left_3"],
+    "walk-right": ["walk_right_0", "walk_right_1", "walk_right_2", "walk_right_3"],
+  };
+  for (const [key, frames] of Object.entries(anims)) {
     scene.anims.create({
-      key: "walk-" + d,
-      frames: scene.anims.generateFrameNumbers("character", {
-        start: row * 4,
-        end: row * 4 + 3,
-      }),
+      key,
+      frames: frames.map((f) => ({ key: "character", frame: f })),
       frameRate: 8,
       repeat: -1,
     });
-  });
+  }
 }
 
 export function resetCharacter(

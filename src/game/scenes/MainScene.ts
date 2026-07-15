@@ -38,10 +38,7 @@ export class MainScene extends Phaser.Scene {
     this.load.image("school", "/assets/school.png");
     this.load.image("book", "/assets/book.png");
     this.load.image("success", "/assets/success.png");
-    this.load.spritesheet("character", "/assets/character.png", {
-      frameWidth: 256,
-      frameHeight: 384,
-    });
+    this.load.atlas("character", "/assets/character.png", "/assets/character-atlas.json");
   }
 
   create(): void {
