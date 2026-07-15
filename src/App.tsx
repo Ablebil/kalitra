@@ -1,7 +1,7 @@
-import "./App.css";
+import { AppShell } from "./app/App.tsx";
 
 function App() {
-  return <></>;
+  return <AppShell />;
 }
 
 export default App;
