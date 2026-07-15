@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import { Puzzle, Compass, VolumeX, Volume2, Home, Check } from "lucide-react";
+import { Puzzle, VolumeX, Volume2, Home, Check } from "lucide-react";
 import { GameCanvas } from "../components/GameCanvas.tsx";
 import { CommandPalette } from "../components/CommandPalette.tsx";
 import { ProgramList } from "../components/ProgramList.tsx";
@@ -297,7 +297,7 @@ export function AppShell() {
     const level = levels[state.levelIndex];
     if (!level) return;
     resetWorldState(sceneRef.current, level, state as any);
-  }, [state.levelIndex]);
+  }, [state]);
 
   const handleNextLevel = useCallback(() => {
     setModal(null);
