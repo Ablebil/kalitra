@@ -1,4 +1,13 @@
-import { TILE, GAME_W, GAME_H, px, py, CHAR_Y_ADJUST } from "../utils/constants.ts";
+import {
+  TILE,
+  GAME_W,
+  GAME_H,
+  px,
+  py,
+  CHAR_Y_ADJUST,
+  OBSTACLE_ORIGIN_Y,
+  OBSTACLE_Y_ADJUST,
+} from "../utils/constants.ts";
 import { pickGrassKey, pickObstacleKey } from "../utils/helpers.ts";
 import { decorateLevel } from "../utils/decorations.ts";
 import type { ObstacleType } from "../types/index.ts";
@@ -20,7 +29,8 @@ function obstacleFit(sprite: Phaser.GameObjects.Image, type: ObstacleType): void
   const maxDim = TILE * (targets[type] || 0.8);
   const s = Math.min(maxDim / sprite.width, maxDim / sprite.height);
   sprite.setScale(s);
-  sprite.setOrigin(0.5, 0.86);
+  const originY = OBSTACLE_ORIGIN_Y[sprite.texture.key] ?? 0.95;
+  sprite.setOrigin(0.5, originY);
 }
 
 export function addFootprint(scene: any, col: number, row: number): void {
@@ -70,7 +80,11 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
 
   level.obstacles.forEach((o: any) => {
     const key = pickObstacleKey(o.type, o.col, o.row);
-    const spr = scene.add.image(px(origin.x, o.col), py(origin.y, o.row) + TILE * 0.42, key);
+    const spr = scene.add.image(
+      px(origin.x, o.col),
+      py(origin.y, o.row) + TILE / 2 + (OBSTACLE_Y_ADJUST[o.type] ?? 0),
+      key,
+    );
     obstacleFit(spr, o.type);
     spr.setDepth(py(origin.y, o.row));
     scene.worldLayer.add(spr);
@@ -95,10 +109,11 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
 
   level.collectibles.forEach((cItem: any) => {
     const baseX = px(origin.x, cItem.col);
-    const baseY = py(origin.y, cItem.row) - 6;
+    const baseY = py(origin.y, cItem.row) + TILE / 2 + OBSTACLE_Y_ADJUST.book;
     const spr = scene.add.image(baseX, baseY, "book");
     const s = Math.min((TILE * 0.5) / spr.width, (TILE * 0.5) / spr.height);
     spr.setScale(s);
+    spr.setOrigin(0.5, OBSTACLE_ORIGIN_Y.book);
     spr.setDepth(py(origin.y, cItem.row) + 1);
     spr.setData("baseScale", s);
     spr.setData("baseX", baseX);

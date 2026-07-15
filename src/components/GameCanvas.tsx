@@ -23,7 +23,12 @@ export function GameCanvas({ onSceneReady }: GameCanvasProps) {
       parent: container,
       pixelArt: true,
       roundPixels: true,
-      render: { transparent: true },
+      antialias: false,
+      render: {
+        transparent: true,
+        pixelArt: true,
+        antialias: false,
+      },
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,

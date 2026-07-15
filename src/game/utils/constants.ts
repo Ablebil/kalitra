@@ -29,7 +29,35 @@ export const GRASS_KEYS: GrassKey[] = ["grass0", "grass1", "grass2"];
 
 export const GRASS_WEIGHTS: number[] = [0.7, 0.15, 0.15];
 
-export const CHAR_Y_ADJUST = 3;
+export const CHAR_Y_ADJUST = -24;
+
+// Per-variant origin Y so that the visible content bottom aligns with the anchor point.
+// Each value = (visibleContentMaxY + 1) / imageHeight, measured from the raw PNG pixels.
+export const OBSTACLE_ORIGIN_Y: Record<string, number> = {
+  rock0: 0.958,
+  rock1: 0.956,
+  rock2: 0.959,
+  tree0: 0.959,
+  tree1: 0.959,
+  tree2: 0.959,
+  bush0: 0.962,
+  bush1: 0.959,
+  bush2: 0.959,
+  fence0: 0.988,
+  fence1: 0.974,
+  fence2: 0.962,
+  book: 0.961,
+};
+
+// Per-type fine-tune Y adjustment (applied after origin fix; positive = lower, negative = higher).
+// Set to 0 initially — tweak per type if visual inspection shows any still floating/sinking.
+export const OBSTACLE_Y_ADJUST: Record<string, number> = {
+  rock: 0,
+  tree: 0,
+  bush: 0,
+  fence: 0,
+  book: -24,
+};
 
 export const GAME_W = 800;
 

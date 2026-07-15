@@ -334,7 +334,10 @@ export function AppShell() {
       {/* TOPBAR */}
       <header className="flex items-center justify-between px-[14px] py-2 bg-white/80 backdrop-blur-sm border-b-3 border-white/50 shrink-0 gap-2">
         <div className="flex items-center gap-2 font-extrabold text-xl text-[#4a3728] tracking-[0.5px]">
-          <Compass size={26} className="drop-shadow-[0_2px_0_rgba(0,0,0,0.15)]" />
+          <img
+            src="/assets/icon.png"
+            className="h-[28px] w-auto drop-shadow-[0_2px_0_rgba(0,0,0,0.15)]"
+          />
           <span className="max-[480px]:hidden">Kalitra</span>
         </div>
         <div className="font-bold text-[14px] text-[#7a6552] text-center flex-1 truncate">

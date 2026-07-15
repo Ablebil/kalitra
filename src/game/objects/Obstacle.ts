@@ -1,7 +1,7 @@
 import Phaser from "phaser";
-import { TILE } from "../utils/constants.ts";
+import { TILE, OBSTACLE_ORIGIN_Y, OBSTACLE_Y_ADJUST } from "../utils/constants.ts";
 import { px, py, pickObstacleKey } from "../utils/helpers.ts";
-import type { LevelData } from "../types/index.ts";
+import type { LevelData, ObstacleType } from "../types/index.ts";
 
 const OBSTACLE_TARGETS: Record<string, number> = {
   bush: 0.82,
@@ -10,11 +10,12 @@ const OBSTACLE_TARGETS: Record<string, number> = {
   fence: 0.86,
 };
 
-export function obstacleFit(sprite: Phaser.GameObjects.Image, type: string): void {
+export function obstacleFit(sprite: Phaser.GameObjects.Image, type: ObstacleType): void {
   const maxDim = TILE * (OBSTACLE_TARGETS[type] || 0.8);
   const s = Math.min(maxDim / sprite.width, maxDim / sprite.height);
   sprite.setScale(s);
-  sprite.setOrigin(0.5, 0.86);
+  const originY = OBSTACLE_ORIGIN_Y[sprite.texture.key] ?? 0.95;
+  sprite.setOrigin(0.5, originY);
 }
 
 export function createObstacles(
@@ -25,8 +26,12 @@ export function createObstacles(
 ): void {
   level.obstacles.forEach((o) => {
     const key = pickObstacleKey(o.type, o.col, o.row);
-    const spr = scene.add.image(px(origin.x, o.col), py(origin.y, o.row) + TILE * 0.42, key);
-    obstacleFit(spr, o.type);
+    const spr = scene.add.image(
+      px(origin.x, o.col),
+      py(origin.y, o.row) + TILE / 2 + (OBSTACLE_Y_ADJUST[o.type] ?? 0),
+      key,
+    );
+    obstacleFit(spr, o.type as ObstacleType);
     spr.setDepth(py(origin.y, o.row));
     container.add(spr);
   });

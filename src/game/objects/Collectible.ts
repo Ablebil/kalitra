@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { TILE } from "../utils/constants.ts";
+import { TILE, OBSTACLE_ORIGIN_Y, OBSTACLE_Y_ADJUST } from "../utils/constants.ts";
 import { px, py } from "../utils/helpers.ts";
 import type { LevelData } from "../types/index.ts";
 
@@ -11,12 +11,15 @@ export function createCollectibles(
   collectibleSprites: Record<string, Phaser.GameObjects.Image>,
 ): void {
   level.collectibles.forEach((cItem) => {
-    const spr = scene.add.image(px(origin.x, cItem.col), py(origin.y, cItem.row) - 6, "book");
+    const baseY = py(origin.y, cItem.row) + TILE / 2 + OBSTACLE_Y_ADJUST.book;
+    const spr = scene.add.image(px(origin.x, cItem.col), baseY, "book");
     const s = Math.min((TILE * 0.5) / spr.width, (TILE * 0.5) / spr.height);
     spr.setScale(s);
+    spr.setOrigin(0.5, OBSTACLE_ORIGIN_Y.book);
     spr.setDepth(py(origin.y, cItem.row) + 1);
     spr.setData("col", cItem.col);
     spr.setData("row", cItem.row);
+    spr.setData("baseY", baseY);
 
     scene.tweens.add({
       targets: spr,
