@@ -14,25 +14,29 @@ export function GameCanvas({ onSceneReady }: GameCanvasProps) {
     const container = containerRef.current;
     if (!container) return;
 
-    const game = new Phaser.Game({
+    // 1. Ekstensi tipe di root untuk menerima 'resolution'
+    const config: Phaser.Types.Core.GameConfig & { resolution?: number } = {
       type: Phaser.AUTO,
       width: GAME_W,
       height: GAME_H,
       parent: container,
+      resolution: window.devicePixelRatio || 1, 
       render: {
         transparent: true,
         antialias: true,
-        roundPixels: true, 
+        roundPixels: true,
       },
-      // Delegasi manajemen resolusi ke ScaleManager
+      // 2. Inline casting (Type Assertion) untuk blok scale
+      // Menginstruksikan TS bahwa objek ini adalah ScaleConfig standar DITAMBAH autoDensity
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        resolution: window.devicePixelRatio || 1, // Menyelaraskan dengan physical pixel ratio
-        autoDensity: true, // Menginstruksikan CSS canvas untuk beradaptasi dengan resolusi internal
-      },
+        autoDensity: true,
+      } as Phaser.Types.Core.ScaleConfig & { autoDensity?: boolean },
       scene: [MainScene],
-    });
+    };
+
+    const game = new Phaser.Game(config);
 
     game.registry.set("onSceneReadyCallback", onSceneReady);
 
