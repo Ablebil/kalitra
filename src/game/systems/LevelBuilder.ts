@@ -1,4 +1,4 @@
-import { TILE, GAME_W, GAME_H, px, py, CHAR_ROW } from "../utils/constants.ts";
+import { TILE, GAME_W, GAME_H, px, py, CHAR_ROW, DEBUG } from "../utils/constants.ts";
 import { pickGrassKey, pickObstacleKey } from "../utils/helpers.ts";
 import { decorateLevel } from "../utils/decorations.ts";
 import type { ObstacleType } from "../types/index.ts";
@@ -7,8 +7,6 @@ import type { ObstacleType } from "../types/index.ts";
 //   minOffset = originY(0.86) * renderedH(TILE*1.02) - TILE/2 = TILE*0.3772
 //   TILE * 0.38 gives topEdge margin = +0.28px (sprite head just inside tile bounds)
 const CHAR_Y_OFFSET = TILE * 0.38;
-// Shadow sits 2px below the character anchor point
-const SHADOW_Y_OFFSET = TILE * 0.4;
 
 function obstacleFit(sprite: Phaser.GameObjects.Image, type: ObstacleType): void {
   const targets: Record<string, number> = { bush: 0.82, tree: 0.92, rock: 0.72, fence: 0.86 };
@@ -70,18 +68,6 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
     spr.setDepth(py(origin.y, o.row));
     scene.worldLayer.add(spr);
   });
-
-  const sm = scene.add.ellipse(
-    px(origin.x, level.start.col),
-    py(origin.y, level.start.row) + SHADOW_Y_OFFSET,
-    TILE * 0.62,
-    TILE * 0.28,
-    0xffffff,
-    0.35,
-  );
-  sm.setDepth(-500);
-  scene.worldLayer.add(sm);
-  scene.charShadow = sm;
 
   const f = level.finish;
   const bld = scene.add.image(px(origin.x, f.col), py(origin.y, f.row) + TILE * 0.3, f.building);
@@ -148,6 +134,44 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
 
   // Idle bob tween — gentle scale-Y oscillation while not walking
   startIdleBob(scene, cScale);
+
+  if (DEBUG) {
+    // Tile grid overlay
+    const gfx = scene.add.graphics();
+    gfx.lineStyle(1, 0xff0000, 0.4);
+    for (let r = 0; r <= level.rows; r++) {
+      gfx.moveTo(px(origin.x, 0) - TILE / 2, py(origin.y, r) - TILE / 2);
+      gfx.lineTo(px(origin.x, level.cols - 1) + TILE / 2, py(origin.y, r) - TILE / 2);
+    }
+    for (let c = 0; c <= level.cols; c++) {
+      gfx.moveTo(px(origin.x, c) - TILE / 2, py(origin.y, 0) - TILE / 2);
+      gfx.lineTo(px(origin.x, c) - TILE / 2, py(origin.y, level.rows - 1) + TILE / 2);
+    }
+    gfx.strokePath();
+    gfx.setDepth(9999);
+    scene.worldLayer.add(gfx);
+
+    // Coordinate labels per tile
+    const style = { fontSize: "11px", color: "#ff4444", fontFamily: "monospace" };
+    for (let r = 0; r < level.rows; r++) {
+      for (let c = 0; c < level.cols; c++) {
+        const label = scene.add.text(px(origin.x, c), py(origin.y, r), `${c},${r}`, style);
+        label.setOrigin(0.5, 0.5);
+        label.setDepth(9998);
+        scene.worldLayer.add(label);
+      }
+    }
+
+    // Character bounding box
+    const cs = scene.charSprite;
+    const bb = scene.add.graphics();
+    const w = 256 * scene.charScale;
+    const h = 384 * scene.charScale;
+    bb.lineStyle(2, 0x00ff00, 0.8);
+    bb.strokeRect(cs.x - w / 2, cs.y - h * 0.86, w, h);
+    bb.setDepth(9997);
+    scene.worldLayer.add(bb);
+  }
 }
 
 /** Start the idle bob animation on the character sprite. */
@@ -173,5 +197,4 @@ export function stopIdleBob(scene: any, cScale: number): void {
   scene._idleBobActive = false;
 }
 
-// Re-export constants so MovementSystem can use the same values
-export { CHAR_Y_OFFSET, SHADOW_Y_OFFSET };
+export { CHAR_Y_OFFSET };

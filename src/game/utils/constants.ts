@@ -1,5 +1,8 @@
 import type { Direction, DirVec, ObstacleKey, ObstacleType, GrassKey } from "../types/index.ts";
 
+/** Set to false to disable debug overlay and verbose logging */
+export const DEBUG = true;
+
 export const TILE = 100;
 
 export const DIRS: Direction[] = ["up", "right", "down", "left"];

@@ -21,6 +21,8 @@ export function GameCanvas({ onSceneReady }: GameCanvasProps) {
       width: GAME_W,
       height: GAME_H,
       parent: container,
+      pixelArt: true,
+      roundPixels: true,
       render: { transparent: true },
       scale: {
         mode: Phaser.Scale.FIT,

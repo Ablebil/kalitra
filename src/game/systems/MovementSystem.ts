@@ -1,12 +1,11 @@
 import { sleep, tweenPromise } from "../utils/helpers.ts";
-import { CHAR_ROW, px, py, DIRS } from "../utils/constants.ts";
+import { CHAR_ROW, px, py, DIRS, DEBUG } from "../utils/constants.ts";
 import {
   addFootprint,
   clearFootprints,
   startIdleBob,
   stopIdleBob,
   CHAR_Y_OFFSET,
-  SHADOW_Y_OFFSET,
 } from "./LevelBuilder.ts";
 import { playSound } from "../../lib/audio.ts";
 import type { LevelData, Direction } from "../types/index.ts";
@@ -37,7 +36,6 @@ export async function moveForward(
     return "obstacle";
   }
   const cs = scene.charSprite;
-  const shadow = scene.charShadow as Phaser.GameObjects.Ellipse | undefined;
   const origin = scene.levelOrigin;
 
   // Stop idle bob before playing walk animation
@@ -45,6 +43,7 @@ export async function moveForward(
   cs.play("walk-" + charDir);
   playSound(scene.muted, "step");
 
+  let frameCount = 0;
   await tweenPromise(scene, cs, {
     x: px(origin.x, nc),
     y: py(origin.y, nr) + CHAR_Y_OFFSET,
@@ -52,12 +51,27 @@ export async function moveForward(
     ease: "Linear",
     onUpdate: () => {
       cs.setDepth(cs.y);
-      // Shadow tracks character in real time
-      if (shadow) {
-        shadow.setPosition(cs.x, cs.y + (SHADOW_Y_OFFSET - CHAR_Y_OFFSET));
+      if (DEBUG) {
+        frameCount++;
+        if (frameCount % 3 === 0) {
+          const currentAnim = cs.anims?.currentAnim?.key ?? "none";
+          const currentFrame = cs.frame?.name ?? cs.frame;
+          console.log(
+            `[MOVE] frame=${frameCount} pos=(${cs.x.toFixed(1)},${cs.y.toFixed(1)})`,
+            `depth=${cs.depth} anim=${currentAnim} frameIdx=${currentFrame}`,
+            `scale=(${cs.scaleX.toFixed(4)},${cs.scaleY.toFixed(4)})`,
+          );
+        }
       }
     },
   });
+
+  if (DEBUG) {
+    console.log(
+      `[MOVE] DONE from (${charCol},${charRow})→(${nc},${nr}) totalFrames=${frameCount}`,
+      `finalPos=(${cs.x.toFixed(1)},${cs.y.toFixed(1)}) depth=${cs.depth}`,
+    );
+  }
 
   cs.stop();
   cs.setFrame(CHAR_ROW[charDir] * 4);
@@ -65,11 +79,6 @@ export async function moveForward(
   state.charCol = nc;
   state.charRow = nr;
   cs.setDepth(py(origin.y, nr) + 1);
-
-  // Snap shadow to final tile position
-  if (shadow) {
-    shadow.setPosition(px(origin.x, nc), py(origin.y, nr) + SHADOW_Y_OFFSET);
-  }
 
   const key = nc + "," + nr;
   if (scene.collectibleSprites[key]) {
@@ -172,14 +181,6 @@ export function resetWorldState(scene: any, level: LevelData, state: MovementSta
   cs.setDepth(py(origin.y, level.start.row) + 1);
   cs.clearTint();
   cs.setScale(scene.charScale);
-
-  // Reset shadow to start position
-  if (scene.charShadow) {
-    scene.charShadow.setPosition(
-      px(origin.x, level.start.col),
-      py(origin.y, level.start.row) + SHADOW_Y_OFFSET,
-    );
-  }
 
   // Resume idle bob after reset
   startIdleBob(scene, scene.charScale);
