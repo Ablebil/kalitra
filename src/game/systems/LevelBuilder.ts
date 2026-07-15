@@ -1,6 +1,14 @@
 import { TILE, GAME_W, GAME_H, px, py, CHAR_ROW } from "../utils/constants.ts";
 import { pickGrassKey, pickObstacleKey } from "../utils/helpers.ts";
-import type { LevelData, ObstacleType } from "../types/index.ts";
+import { decorateLevel } from "../utils/decorations.ts";
+import type { ObstacleType } from "../types/index.ts";
+
+// Character Y offset from tile centre, derived from:
+//   minOffset = originY(0.86) * renderedH(TILE*1.02) - TILE/2 = TILE*0.3772
+//   TILE * 0.38 gives topEdge margin = +0.28px (sprite head just inside tile bounds)
+const CHAR_Y_OFFSET = TILE * 0.38;
+// Shadow sits 2px below the character anchor point
+const SHADOW_Y_OFFSET = TILE * 0.4;
 
 function obstacleFit(sprite: Phaser.GameObjects.Image, type: ObstacleType): void {
   const targets: Record<string, number> = { bush: 0.82, tree: 0.92, rock: 0.72, fence: 0.86 };
@@ -26,6 +34,7 @@ export function clearFootprints(scene: any): void {
 }
 
 export function buildLevel(scene: any, level: import("../types/index.ts").LevelData): void {
+  decorateLevel(level);
   scene.tweens.killAll();
   scene.worldLayer.removeAll(true);
   scene.footprints = [];
@@ -64,7 +73,7 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
 
   const sm = scene.add.ellipse(
     px(origin.x, level.start.col),
-    py(origin.y, level.start.row) + TILE * 0.32,
+    py(origin.y, level.start.row) + SHADOW_Y_OFFSET,
     TILE * 0.62,
     TILE * 0.28,
     0xffffff,
@@ -72,6 +81,7 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
   );
   sm.setDepth(-500);
   scene.worldLayer.add(sm);
+  scene.charShadow = sm;
 
   const f = level.finish;
   const bld = scene.add.image(px(origin.x, f.col), py(origin.y, f.row) + TILE * 0.3, f.building);
@@ -124,7 +134,7 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
   const FRAME_H = 384;
   const cs = scene.add.sprite(
     px(origin.x, level.start.col),
-    py(origin.y, level.start.row) + TILE * 0.3,
+    py(origin.y, level.start.row) + CHAR_Y_OFFSET,
     "character",
     CHAR_ROW[level.start.dir] * 4,
   );
@@ -135,4 +145,33 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
   scene.worldLayer.add(cs);
   scene.charSprite = cs;
   scene.charScale = cScale;
+
+  // Idle bob tween — gentle scale-Y oscillation while not walking
+  startIdleBob(scene, cScale);
 }
+
+/** Start the idle bob animation on the character sprite. */
+export function startIdleBob(scene: any, cScale: number): void {
+  scene.tweens.killTweensOf(scene.charSprite);
+  scene.tweens.add({
+    targets: scene.charSprite,
+    scaleY: cScale * 0.96,
+    scaleX: cScale * 1.02,
+    duration: 500,
+    yoyo: true,
+    repeat: -1,
+    ease: "Sine.easeInOut",
+  });
+  scene._idleBobActive = true;
+}
+
+/** Stop idle bob and restore exact scale. Called before walking starts. */
+export function stopIdleBob(scene: any, cScale: number): void {
+  if (!scene._idleBobActive) return;
+  scene.tweens.killTweensOf(scene.charSprite);
+  scene.charSprite.setScale(cScale);
+  scene._idleBobActive = false;
+}
+
+// Re-export constants so MovementSystem can use the same values
+export { CHAR_Y_OFFSET, SHADOW_Y_OFFSET };

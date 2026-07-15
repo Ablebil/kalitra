@@ -37,7 +37,7 @@ export function BlockItem({
           onStartEdit(block.id, block.children);
         }}
       >
-        <div className="flex items-center gap-[5px] text-white font-extrabold text-[12.5px] px-[4px_4px_2px]">
+        <div className="flex items-center gap-[5px] text-white font-extrabold text-[12.5px] px-[4px] pb-[2px]">
           <Repeat size={16} />
           <span>Ulangi</span>
           <button
@@ -111,7 +111,7 @@ export function BlockItem({
 
   return (
     <div
-      className={`rounded-[10px] py-[7px_10px] font-bold text-[13px] flex items-center justify-between gap-[6px] shadow-[0_2px_0_rgba(0,0,0,0.15)] cursor-default text-white ${color} ${isExecActive ? "outline-3 outline-solid outline-offset-2 outline-[#ffe066] shadow-[0_0_0_4px_rgba(255,224,102,0.4),0_2px_0_rgba(0,0,0,0.15)]" : ""}`}
+      className={`rounded-[10px] py-[7px] px-[10px] font-bold text-[13px] flex items-center justify-between gap-[6px] shadow-[0_2px_0_rgba(0,0,0,0.15)] cursor-default text-white ${color} ${isExecActive ? "outline-3 outline-solid outline-offset-2 outline-[#ffe066] shadow-[0_0_0_4px_rgba(255,224,102,0.4),0_2px_0_rgba(0,0,0,0.15)]" : ""}`}
       style={{ animation: "blockIn 0.18s ease" }}
     >
       <span>

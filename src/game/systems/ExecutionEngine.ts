@@ -1,5 +1,5 @@
 import { sleep } from "../utils/helpers.ts";
-import { moveForward, turnChar, resetWorldState, type MovementState } from "./MovementSystem.ts";
+import { moveForward, turnChar, type MovementState } from "./MovementSystem.ts";
 import type { BlockNode, LevelData, ExecuteResult } from "../types/index.ts";
 
 let stopRequested = false;

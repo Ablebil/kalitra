@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { TILE, CHAR_ROW } from "../utils/constants.ts";
 import { px, py, sleep } from "../utils/helpers.ts";
-import type { Direction, LevelData } from "../types/index.ts";
+import type { LevelData } from "../types/index.ts";
 
 export function createCharacter(
   scene: Phaser.Scene,
@@ -38,7 +38,7 @@ export function createWalkingAnimations(scene: Phaser.Scene): void {
 }
 
 export function resetCharacter(
-  scene: Phaser.Scene,
+  _scene: Phaser.Scene,
   cs: Phaser.GameObjects.Sprite,
   cScale: number,
   origin: { x: number; y: number },

@@ -1,13 +1,19 @@
 import { levels } from "../data/levels.ts";
-import type { LevelData } from "../types/index.ts";
+import type { LevelData, FailReason } from "../types/index.ts";
 
 interface LevelManagerCallbacks {
   showIntro: (level: LevelData) => void;
-  showWin: (level: LevelData, stars: number, justUnlocked: boolean) => void;
-  showFail: (level: LevelData) => void;
+  showWin: (level: LevelData, stars: number, justUnlocked: boolean, isLast?: boolean) => void;
+  showFail: (reason: FailReason) => void;
+  showLevelSelect?: () => void;
+  playSound?: (name: string) => void;
+  onProgramReset?: () => void;
 }
 
 export class LevelManager {
+  levelIndex = 0;
+  unlockedCount = 1;
+  starsPerLevel: Record<number, number> = {};
   private current = 0;
   private callbacks: LevelManagerCallbacks;
 

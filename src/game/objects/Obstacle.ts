@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { TILE } from "../utils/constants.ts";
 import { px, py, pickObstacleKey } from "../utils/helpers.ts";
-import type { LevelData, ObstacleType } from "../types/index.ts";
+import type { LevelData } from "../types/index.ts";
 
 const OBSTACLE_TARGETS: Record<string, number> = {
   bush: 0.82,

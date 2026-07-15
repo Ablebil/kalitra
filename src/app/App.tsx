@@ -11,12 +11,13 @@ import { LevelSelectModal } from "../components/LevelSelectModal.tsx";
 import { Toast } from "../components/Toast.tsx";
 import { LevelManager } from "../game/managers/LevelManager.ts";
 import { SaveManager } from "../game/managers/SaveManager.ts";
-import { executeList, requestStop, resetStop } from "../game/systems/ExecutionEngine.ts";
+import { executeList, resetStop } from "../game/systems/ExecutionEngine.ts";
 import { resetWorldState } from "../game/systems/MovementSystem.ts";
+import { startIdleBob } from "../game/systems/LevelBuilder.ts";
 import { levels } from "../game/data/levels.ts";
 import { useGameState } from "../hooks/useGameState.ts";
 import { useAudio } from "../hooks/useAudio.ts";
-import type { LevelData, FailReason } from "../game/types/index.ts";
+import type { LevelData } from "../game/types/index.ts";
 
 const saveManager = new SaveManager();
 
@@ -75,13 +76,13 @@ export function AppShell() {
           setModal({ type: "win", level, stars, justUnlocked, isLast }),
         showFail: (reason) => setModal({ type: "fail", reason }),
         showLevelSelect: () => setLevelSelectOpen(true),
-        playSound: (name) => sound(name),
+        playSound: (name: string) => sound(name),
         onProgramReset: () => {
           // state reset is handled by loadLevelAction in handleLevelSelect
         },
       });
     },
-    [sound, loadLevelAction],
+    [sound],
   );
 
   useEffect(() => {
@@ -109,10 +110,6 @@ export function AppShell() {
     [loadLevelAction],
   );
 
-  const handleCloseModal = useCallback(() => {
-    setModal(null);
-  }, []);
-
   const handleStartLevel = useCallback(() => {
     setModal(null);
     if (sceneRef.current) {
@@ -120,30 +117,60 @@ export function AppShell() {
     }
   }, [state.levelIndex]);
 
+  // Derived limit values — re-computed on every render so handlers close over them
+  const _activeLevel = levels[state.levelIndex];
+  const _isInRepeat = !!state.activeRepeatId;
+  const _blockCount = _isInRepeat ? (state.activeContainer?.length ?? 0) : state.program.length;
+  const _maxBlocks = _isInRepeat ? 6 : _activeLevel?.maxTop || 10;
+  const _atLimit = _blockCount >= _maxBlocks;
+  const _atLimitMsg = _isInRepeat
+    ? `Batas ${_maxBlocks} blok di dalam Ulangi! Selesaikan dulu atau hapus blok.`
+    : `Batas ${_maxBlocks} blok! Coba gunakan Ulangi untuk lebih banyak langkah.`;
+
   const handleAddForward = useCallback(() => {
     if (state.running) return;
+    if (_atLimit) {
+      setToastMsg(_atLimitMsg);
+      return;
+    }
     addAtomicBlock("forward");
     sound("click");
-  }, [state.running, addAtomicBlock, sound]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.running, _atLimit, _atLimitMsg, addAtomicBlock, sound]);
 
   const handleAddLeft = useCallback(() => {
     if (state.running) return;
+    if (_atLimit) {
+      setToastMsg(_atLimitMsg);
+      return;
+    }
     addAtomicBlock("left");
     sound("click");
-  }, [state.running, addAtomicBlock, sound]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.running, _atLimit, _atLimitMsg, addAtomicBlock, sound]);
 
   const handleAddRight = useCallback(() => {
     if (state.running) return;
+    if (_atLimit) {
+      setToastMsg(_atLimitMsg);
+      return;
+    }
     addAtomicBlock("right");
     sound("click");
-  }, [state.running, addAtomicBlock, sound]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.running, _atLimit, _atLimitMsg, addAtomicBlock, sound]);
 
   const handleAddRepeat = useCallback(() => {
     if (state.running) return;
     if (state.activeContainer) return;
+    if (_atLimit) {
+      setToastMsg(_atLimitMsg);
+      return;
+    }
     addRepeatBlock();
     sound("click");
-  }, [state.running, state.activeContainer, addRepeatBlock, sound]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.running, state.activeContainer, _atLimit, _atLimitMsg, addRepeatBlock, sound]);
 
   const handleRemoveBlock = useCallback(
     (id: string) => {
@@ -230,6 +257,11 @@ export function AppShell() {
     setExecHighlights(new Set());
     setRunning(false);
 
+    // Resume idle bob after execution ends regardless of result
+    if (scene.charSprite && scene.charScale) {
+      startIdleBob(scene, scene.charScale);
+    }
+
     if (result === "stopped") return;
 
     if (result === "ok") {
@@ -265,7 +297,7 @@ export function AppShell() {
     const level = levels[state.levelIndex];
     if (!level) return;
     resetWorldState(sceneRef.current, level, state as any);
-  }, [state.levelIndex, state]);
+  }, [state]);
 
   const handleNextLevel = useCallback(() => {
     setModal(null);
@@ -289,6 +321,10 @@ export function AppShell() {
 
   const currentLevel = levels[state.levelIndex];
   const isEditingRepeat = !!state.activeRepeatId;
+  // Limit values for passing to UI components
+  const uiBlockCount = _blockCount;
+  const uiMaxBlocks = _maxBlocks;
+  const uiAtLimit = _atLimit;
 
   return (
     <div
@@ -352,6 +388,7 @@ export function AppShell() {
             onAddRepeat={handleAddRepeat}
             disabled={state.running}
             repeatDisabled={state.running || !!state.activeContainer}
+            atLimit={!state.running && uiAtLimit}
           />
 
           <ProgramList
@@ -364,16 +401,18 @@ export function AppShell() {
             onDecCount={handleDecCount}
             onIncCount={handleIncCount}
             disabled={state.running}
+            blockCount={uiBlockCount}
+            maxBlocks={uiMaxBlocks}
           />
 
           {state.activeRepeatId && (
             <button
-              className="w-full border-none rounded-[9px] cursor-pointer py-[9px] font-extrabold text-[13px] text-white shadow-[0_4px_0_rgba(0,0,0,0.18)] active:translate-y-[3px] active:shadow-[0_1px_0_rgba(0,0,0,0.18)] disabled:opacity-45 disabled:cursor-not-allowed"
+              className="w-full border-none rounded-[9px] cursor-pointer py-3 px-[10px] font-extrabold text-[13px] text-white shadow-[0_4px_0_rgba(0,0,0,0.18)] active:translate-y-[3px] active:shadow-[0_1px_0_rgba(0,0,0,0.18)] disabled:opacity-45 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 transition-opacity"
               style={{ background: "linear-gradient(180deg,#7cc142,#59a02a)" }}
               onClick={handleFinishRepeat}
               disabled={state.running}
             >
-              <Check size={16} className="mr-1" /> Selesai
+              <Check size={16} /> Selesai
             </button>
           )}
 

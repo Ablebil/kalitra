@@ -13,8 +13,7 @@ export const levels: LevelData[] = [
       { col: 2, row: 2 },
       { col: 4, row: 2 },
     ],
-    intro:
-      "Bantu Prompt sampai ke rumah! Susun beberapa blok <b>Maju</b>, lalu tekan <b>JALANKAN</b>.",
+    intro: "Bantu Prompt sampai ke rumah! Susun beberapa blok Maju, lalu tekan JALANKAN.",
     maxTop: 8,
   },
   {
@@ -32,8 +31,7 @@ export const levels: LevelData[] = [
       { col: 1, row: 0 },
       { col: 3, row: 1 },
     ],
-    intro:
-      "Kali ini jalannya berbelok! Gunakan blok <b>Kiri</b> / <b>Kanan</b> untuk mengubah arah Prompt.",
+    intro: "Kali ini jalannya berbelok! Gunakan blok Kiri / Kanan untuk mengubah arah Prompt.",
     maxTop: 10,
   },
   {
@@ -67,7 +65,7 @@ export const levels: LevelData[] = [
       { col: 5, row: 1 },
     ],
     intro:
-      "Jalan ini panjang sekali! Coba gunakan blok <b>Ulangi</b> supaya tidak perlu menyusun banyak blok Maju satu-satu.",
+      "Jalan ini panjang sekali! Coba gunakan blok Ulangi supaya tidak perlu menyusun banyak blok Maju satu-satu.",
     maxTop: 6,
   },
   {

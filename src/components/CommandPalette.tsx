@@ -7,6 +7,7 @@ interface CommandPaletteProps {
   onAddRepeat: () => void;
   disabled: boolean;
   repeatDisabled: boolean;
+  atLimit: boolean;
 }
 
 export function CommandPalette({
@@ -16,6 +17,7 @@ export function CommandPalette({
   onAddRepeat,
   disabled,
   repeatDisabled,
+  atLimit,
 }: CommandPaletteProps) {
   return (
     <div className="panel-card">
@@ -28,28 +30,28 @@ export function CommandPalette({
           icon={<ArrowUp size={22} />}
           style="bg-gradient-to-b from-blue-400 to-blue-600"
           onClick={onAddForward}
-          disabled={disabled}
+          disabled={disabled || atLimit}
         />
         <CmdButton
           label="Kiri"
           icon={<ArrowLeft size={22} />}
           style="bg-gradient-to-b from-[#5ec8e0] to-[#34a1c2]"
           onClick={onAddLeft}
-          disabled={disabled}
+          disabled={disabled || atLimit}
         />
         <CmdButton
           label="Kanan"
           icon={<ArrowRight size={22} />}
           style="bg-gradient-to-b from-[#5ec8e0] to-[#34a1c2]"
           onClick={onAddRight}
-          disabled={disabled}
+          disabled={disabled || atLimit}
         />
         <CmdButton
           label="Ulangi"
           icon={<Repeat size={22} />}
           style="bg-gradient-to-b from-purple-400 to-[#7259ad]"
           onClick={onAddRepeat}
-          disabled={repeatDisabled}
+          disabled={repeatDisabled || atLimit}
         />
       </div>
     </div>
@@ -71,7 +73,7 @@ function CmdButton({
 }) {
   return (
     <button
-      className={`border-none rounded-[9px] cursor-pointer py-[10px_4px_8px] flex flex-col items-center gap-1 font-bold text-[11.5px] text-white shadow-[0_4px_0_rgba(0,0,0,0.18)] active:translate-y-[3px] active:shadow-[0_1px_0_rgba(0,0,0,0.18)] disabled:opacity-40 disabled:cursor-not-allowed ${style}`}
+      className={`border-none rounded-[9px] cursor-pointer pt-[10px] pb-[8px] flex flex-col items-center gap-1 font-bold text-[11.5px] text-white shadow-[0_4px_0_rgba(0,0,0,0.18)] active:translate-y-[3px] active:shadow-[0_1px_0_rgba(0,0,0,0.18)] disabled:opacity-40 disabled:cursor-not-allowed transition-opacity ${style}`}
       onClick={onClick}
       disabled={disabled}
     >

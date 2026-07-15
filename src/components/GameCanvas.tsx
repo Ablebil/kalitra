@@ -9,6 +9,8 @@ interface GameCanvasProps {
 
 export function GameCanvas({ onSceneReady }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const onSceneReadyRef = useRef(onSceneReady);
+  onSceneReadyRef.current = onSceneReady;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -27,7 +29,7 @@ export function GameCanvas({ onSceneReady }: GameCanvasProps) {
       scene: [MainScene],
     });
 
-    game.registry.set("onSceneReadyCallback", onSceneReady);
+    game.registry.set("onSceneReadyCallback", onSceneReadyRef.current);
 
     return () => {
       game.destroy(true);

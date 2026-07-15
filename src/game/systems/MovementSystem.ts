@@ -1,6 +1,13 @@
 import { sleep, tweenPromise } from "../utils/helpers.ts";
-import { TILE, CHAR_ROW, px, py, DIRS } from "../utils/constants.ts";
-import { addFootprint, clearFootprints } from "./LevelBuilder.ts";
+import { CHAR_ROW, px, py, DIRS } from "../utils/constants.ts";
+import {
+  addFootprint,
+  clearFootprints,
+  startIdleBob,
+  stopIdleBob,
+  CHAR_Y_OFFSET,
+  SHADOW_Y_OFFSET,
+} from "./LevelBuilder.ts";
 import { playSound } from "../../lib/audio.ts";
 import type { LevelData, Direction } from "../types/index.ts";
 
@@ -30,24 +37,40 @@ export async function moveForward(
     return "obstacle";
   }
   const cs = scene.charSprite;
+  const shadow = scene.charShadow as Phaser.GameObjects.Ellipse | undefined;
   const origin = scene.levelOrigin;
+
+  // Stop idle bob before playing walk animation
+  stopIdleBob(scene, scene.charScale);
   cs.play("walk-" + charDir);
   playSound(scene.muted, "step");
+
   await tweenPromise(scene, cs, {
     x: px(origin.x, nc),
-    y: py(origin.y, nr) + TILE * 0.3,
+    y: py(origin.y, nr) + CHAR_Y_OFFSET,
     duration: 380,
     ease: "Linear",
     onUpdate: () => {
       cs.setDepth(cs.y);
+      // Shadow tracks character in real time
+      if (shadow) {
+        shadow.setPosition(cs.x, cs.y + (SHADOW_Y_OFFSET - CHAR_Y_OFFSET));
+      }
     },
   });
+
   cs.stop();
   cs.setFrame(CHAR_ROW[charDir] * 4);
   addFootprint(scene, charCol, charRow);
   state.charCol = nc;
   state.charRow = nr;
   cs.setDepth(py(origin.y, nr) + 1);
+
+  // Snap shadow to final tile position
+  if (shadow) {
+    shadow.setPosition(px(origin.x, nc), py(origin.y, nr) + SHADOW_Y_OFFSET);
+  }
+
   const key = nc + "," + nr;
   if (scene.collectibleSprites[key]) {
     const spr = scene.collectibleSprites[key];
@@ -76,6 +99,7 @@ export async function turnChar(scene: any, state: MovementState, delta: number):
   cs.setFrame(CHAR_ROW[state.charDir] * 4);
   playSound(scene.muted, "turn");
   const baseX = scene.charScale;
+  stopIdleBob(scene, baseX);
   await tweenPromise(scene, cs, {
     scaleX: baseX * 1.18,
     scaleY: baseX * 1.18,
@@ -91,6 +115,7 @@ async function bumpEffect(scene: any, dirVec: [number, number]): Promise<void> {
   const cs = scene.charSprite;
   const ox = cs.x;
   const oy = cs.y;
+  stopIdleBob(scene, scene.charScale);
   await tweenPromise(scene, cs, {
     x: ox + dirVec[0] * 16,
     y: oy + dirVec[1] * 16,
@@ -143,8 +168,19 @@ export function resetWorldState(scene: any, level: LevelData, state: MovementSta
   const cs = scene.charSprite;
   cs.stop();
   cs.setFrame(CHAR_ROW[level.start.dir] * 4);
-  cs.setPosition(px(origin.x, level.start.col), py(origin.y, level.start.row) + TILE * 0.3);
+  cs.setPosition(px(origin.x, level.start.col), py(origin.y, level.start.row) + CHAR_Y_OFFSET);
   cs.setDepth(py(origin.y, level.start.row) + 1);
   cs.clearTint();
   cs.setScale(scene.charScale);
+
+  // Reset shadow to start position
+  if (scene.charShadow) {
+    scene.charShadow.setPosition(
+      px(origin.x, level.start.col),
+      py(origin.y, level.start.row) + SHADOW_Y_OFFSET,
+    );
+  }
+
+  // Resume idle bob after reset
+  startIdleBob(scene, scene.charScale);
 }
