@@ -33,6 +33,18 @@ function beep(
   gain.connect(ctx.destination);
   osc.start(t0);
   osc.stop(t0 + duration + 0.02);
+  osc.onended = () => {
+    try {
+      osc.disconnect();
+    } catch {
+      /* already disconnected */
+    }
+    try {
+      gain.disconnect();
+    } catch {
+      /* already disconnected */
+    }
+  };
 }
 
 export function playSound(muted: boolean, name: string): void {

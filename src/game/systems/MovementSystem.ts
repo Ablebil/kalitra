@@ -1,5 +1,5 @@
 import { sleep, tweenPromise } from "../utils/helpers.ts";
-import { px, py, DIRS, TILE } from "../utils/constants.ts";
+import { px, py, DIRS, TILE, CHAR_Y_ADJUST } from "../utils/constants.ts";
 
 // Maps direction → atlas idle frame name (mirrors LevelBuilder.ts)
 const FRAME_IDLE: Record<string, string> = {
@@ -47,7 +47,7 @@ export async function moveForward(
 
   await tweenPromise(scene, cs, {
     x: px(origin.x, nc),
-    y: py(origin.y, nr) + TILE / 2,
+    y: py(origin.y, nr) + TILE / 2 + CHAR_Y_ADJUST,
     duration: 380,
     ease: "Linear",
     onUpdate: () => {
@@ -159,7 +159,10 @@ export function resetWorldState(scene: any, level: LevelData, state: MovementSta
   const cs = scene.charSprite;
   cs.stop();
   cs.setFrame(FRAME_IDLE[level.start.dir]);
-  cs.setPosition(px(origin.x, level.start.col), py(origin.y, level.start.row) + TILE / 2);
+  cs.setPosition(
+    px(origin.x, level.start.col),
+    py(origin.y, level.start.row) + TILE / 2 + CHAR_Y_ADJUST,
+  );
   cs.setDepth(py(origin.y, level.start.row) + 1);
   cs.clearTint();
   cs.setScale(scene.charScale);

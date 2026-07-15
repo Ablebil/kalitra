@@ -297,7 +297,7 @@ export function AppShell() {
     const level = levels[state.levelIndex];
     if (!level) return;
     resetWorldState(sceneRef.current, level, state as any);
-  }, [state]);
+  }, [state.levelIndex]);
 
   const handleNextLevel = useCallback(() => {
     setModal(null);

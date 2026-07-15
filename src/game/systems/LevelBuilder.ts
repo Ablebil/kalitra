@@ -1,4 +1,4 @@
-import { TILE, GAME_W, GAME_H, px, py } from "../utils/constants.ts";
+import { TILE, GAME_W, GAME_H, px, py, CHAR_Y_ADJUST } from "../utils/constants.ts";
 import { pickGrassKey, pickObstacleKey } from "../utils/helpers.ts";
 import { decorateLevel } from "../utils/decorations.ts";
 import type { ObstacleType } from "../types/index.ts";
@@ -125,7 +125,7 @@ export function buildLevel(scene: any, level: import("../types/index.ts").LevelD
 
   const cs = scene.add.sprite(
     px(origin.x, level.start.col),
-    py(origin.y, level.start.row) + TILE / 2,
+    py(origin.y, level.start.row) + TILE / 2 + CHAR_Y_ADJUST,
     "character",
     FRAME_IDLE[level.start.dir],
   );

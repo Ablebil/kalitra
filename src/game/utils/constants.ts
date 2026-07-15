@@ -29,6 +29,8 @@ export const GRASS_KEYS: GrassKey[] = ["grass0", "grass1", "grass2"];
 
 export const GRASS_WEIGHTS: number[] = [0.7, 0.15, 0.15];
 
+export const CHAR_Y_ADJUST = 3;
+
 export const GAME_W = 800;
 
 export const GAME_H = 600;
